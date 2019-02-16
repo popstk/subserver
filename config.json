@@ -4,12 +4,12 @@
         "SFZmIyaJDSAKgRVGf8YuiZst0": [
             {
                 "type": "raw",
-                "file": "account.txt",
-                "host": "www.example.com"
+                "file": "account.txt"
             },
             {
                 "type": "v2ray",
-                "file": "/path/to/config.json"
+                "file": "/path/to/config.json",
+                "host": "www.example.com"
             }
         ]
     }
