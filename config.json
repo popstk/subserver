@@ -1,0 +1,16 @@
+{
+    "addr": ":10086",
+    "valid": {
+        "SFZmIyaJDSAKgRVGf8YuiZst0": [
+            {
+                "type": "raw",
+                "file": "account.txt",
+                "host": "www.example.com"
+            },
+            {
+                "type": "v2ray",
+                "file": "/path/to/config.json"
+            }
+        ]
+    }
+}
