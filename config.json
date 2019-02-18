@@ -9,7 +9,9 @@
             {
                 "type": "v2ray",
                 "file": "/path/to/config.json",
-                "host": "www.example.com"
+                "host": "www.example.com",
+                "vmess-fmt": "{protocol}-{network}",
+                "ss-fmt": "{protocol}"
             }
         ]
     }

@@ -1,160 +1,105 @@
 package helper
 
 import (
-	"bufio"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"os"
-	"strconv"
+	"github.com/tidwall/gjson"
+	"io/ioutil"
 )
 
-type v2ray struct {
-	Inbounds []inboundObject `json:"inbounds"`
-}
+const (
+	defaultVmessName = "{protocol}-{network}"
+	defaultSSName    = "{protocol}"
+)
 
-type httpSettings struct {
-	Host []string `json:"host"`
-	Path string   `json:"path"`
-}
-
-type wsSettings struct {
-	Headers map[string]string `json:"headers"`
-	Path    string            `json:"path"`
-}
-
-type quicHeader struct {
-	Type string `json:"type"`
-}
-
-type quicSettings struct {
-	Security string     `json:"security"`
-	Key      string     `json:"key"`
-	Header   quicHeader `json:"header"`
-}
-
-type inboundStream struct {
-	Network  string       `json:"network"`
-	Security string       `json:"security"`
-	Http     httpSettings `json:"httpSettings"`
-	Ws       wsSettings   `json:"wsSettings"`
-	Quic     quicSettings `json:"quicSettings"`
-}
-
-type inboundObject struct {
-	Port           int             `json:"port"`
-	Listen         string          `json:"listen"`
-	Protocol       string          `json:"protocol"`
-	Settings       json.RawMessage `json:"settings"`
-	StreamSettings inboundStream   `json:"streamSettings"`
-}
-
-type inboundVmessClient struct {
-	ID      string `json:"id"`
-	AlterID int    `json:"alterId"`
-	Email   string `json:"email"`
-}
-
-type inboundVmessDefault struct {
-	AlterID string `json:"alterId"`
-}
-
-type inboundVmess struct {
-	Clients []inboundVmessClient `json:"clients"`
-	Default inboundVmessDefault  `json:"default"`
-}
-
-type inboundSS struct {
-	Email    string `json:"email"`
-	Method   string `json:"method"`
-	Password string `json:"password"`
-	Ota      string `json:"ota"`
-	Network  string `json:"network"`
-}
-
-// generateVmess -
 // from https://github.com/2dust/v2rayN/wiki/分享链接格式说明(ver-2)
-func generateVmess(i inboundObject) ([]string, error) {
-	account := make([]string, 0)
-
-	var vmess inboundVmess
-	if err := json.Unmarshal([]byte(i.Settings), &vmess); err != nil {
-		return nil, err
-	}
-
-	for _, client := range vmess.Clients {
-		conf := map[string]string{
-			"v":    "2",
-			"add":  i.Listen,
-			"port": strconv.Itoa(i.Port),
-			"id":   client.ID,
-			"aid":  strconv.Itoa(client.AlterID),
+var vmessParser = JSONParser{
+	Filed: map[string]FieldParser{
+		"protocol":     JSONPathHandler("protocol"),
+		"port": JSONPathHandler("port"),
+		"id":   JSONPathHandler("settings.clients.0.id"),
+		"alterId":  JSONPathHandler("settings.clients.0.alterId"),
+		"network":  JSONPathHandler("streamSettings.network"),
+		"security":  JSONPathHandler("streamSettings.security"),
+	},
+	DefaultField: map[string]string{
+		"v":   "2",
+		"add": "",
+	},
+	PostHandler: func(m map[string]string, tag string) (string, error) {
+		data := map[string]string{
+			"ps": tag,
+			"port": m["port"],
+			"id": m["id"],
+			"aid": m["alterId"],
+			"net": m["network"],
+			"tls": m["security"],
 		}
 
-		if i.StreamSettings.Network != "" {
-			conf["net"] = i.StreamSettings.Network
-		}
-
-		if i.StreamSettings.Security != "" {
-			conf["tls"] = i.StreamSettings.Security
-		}
-
-		data, err := json.Marshal(conf)
+		strs, err := json.Marshal(data)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
-		account = append(account, "vmess://"+base64.StdEncoding.EncodeToString(data))
-	}
-
-	return account, nil
+		return "vmess://" + base64.StdEncoding.EncodeToString(strs), nil
+	},
 }
 
-func generateSS(i inboundObject) ([]string, error) {
-	account := make([]string, 0)
-	var ss inboundSS
-	if err := json.Unmarshal([]byte(i.Settings), &ss); err != nil {
-		return nil, err
-	}
-
-	u := fmt.Sprintf("%s:%s@%s:%d", ss.Method, ss.Password, i.Listen, i.Port)
-	account = append(account, "ss://"+base64.StdEncoding.EncodeToString([]byte(u)))
-	return account, nil
+var ssParser = JSONParser{
+	Filed: map[string]FieldParser{
+		"protocol":     JSONPathHandler("protocol"),
+		"port":     JSONPathHandler("port"),
+		"method":   JSONPathHandler("settings.method"),
+		"password": JSONPathHandler("settings.password"),
+	},
+	DefaultField: map[string]string{
+		"host": "",
+	},
+	PostHandler: func(m map[string]string, tag string) (string, error) {
+		u := fmt.Sprintf("%s:%s@%s:%s", m["method"], m["password"], m["host"], m["port"])
+		u = fmt.Sprintf("ss://%s#%s", base64.StdEncoding.EncodeToString([]byte(u)), tag)
+		return u, nil
+	},
 }
 
 // Export -
-func Export(filepath, host string) ([]string, error) {
-	f, err := os.Open(filepath)
-	if err != nil {
+func Export(filepath, host, vmessfmt, ssfmt string) ([]string, error) {
+	data, err := ioutil.ReadFile(filepath)
+	if err !=nil {
 		return nil, err
 	}
 
-	var conf v2ray
-	reader := bufio.NewReader(f)
-	decoder := json.NewDecoder(reader)
-	err = decoder.Decode(&conf)
-	if err != nil {
-		return nil, err
+	value := gjson.Get(string(data), "inbounds")
+	if !value.IsArray() {
+		return nil, errors.New("Unknow Format")
 	}
 
 	ret := make([]string, 0)
-	for _, inbound := range conf.Inbounds {
-		inbound.Listen = host // replace host
 
-		if inbound.Protocol == "vmess" {
-			link, err := generateVmess(inbound)
+	for _, inbound := range value.Array() {
+
+		protocol := inbound.Get("protocol").String()
+		if protocol == "vmess" {
+			vmessParser.DefaultField["add"] = host
+			vmessParser.TagFmt = vmessfmt
+			u, err := vmessParser.Parse(inbound)
 			if err != nil {
 				return nil, err
 			}
-			ret = append(ret, link...)
-		} else if inbound.Protocol == "shadowsocks" {
-			link, err := generateSS(inbound)
+			ret = append(ret, u)
+		} else if protocol == "shadowsocks" {
+			ssParser.DefaultField["host"] = host
+			ssParser.TagFmt = ssfmt
+			u, err := ssParser.Parse(inbound)
 			if err != nil {
 				return nil, err
 			}
-			ret = append(ret, link...)
+			ret = append(ret, u)
 		}
 	}
+
 
 	return ret, nil
 }

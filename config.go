@@ -16,6 +16,8 @@ type Source struct {
 	Type string `json:"type"`
 	File string `json:"file"`
 	Host string `json:"host"`
+	VmessFmt string `json:"vmess-fmt"`
+	SSFmt string  `json:"ss-fmt"`
 }
 
 // Parse -
@@ -29,7 +31,7 @@ func (s *Source) Parse() ([]string, error) {
 	}
 
 	if s.Type == "v2ray" {
-		lines, err := helper.Export(s.File, s.Host)
+		lines, err := helper.Export(s.File,s.Host, s.VmessFmt, s.SSFmt)
 		if err != nil {
 			return nil, err
 		}
