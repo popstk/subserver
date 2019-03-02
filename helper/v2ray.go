@@ -23,6 +23,9 @@ var vmessParser = JSONParser{
 		"alterId":  JSONPathHandler("settings.clients.0.alterId"),
 		"network":  JSONPathHandler("streamSettings.network"),
 		"security":  JSONPathHandler("streamSettings.security"),
+		"http.host": JSONPathHandler("streamSettings.httpSettings.host.0"),
+		"http.path": JSONPathHandler("streamSettings.httpSettings.path"),
+		"ws.path": JSONPathHandler("streamSettings.wsSettings.path"),
 	},
 	DefaultField: map[string]string{
 		"v":   "2",
@@ -36,6 +39,14 @@ var vmessParser = JSONParser{
 			"aid": m["alterId"],
 			"net": m["network"],
 			"tls": m["security"],
+			"add":m["add"],
+		}
+
+		if m["network"] == "http" {
+			data["host"] = m["http.host"]
+			data["path"] = m["http.path"]
+		} else if m["network"] == "ws" {
+			data["path"] = m["ws.path"]
 		}
 
 		strs, err := json.Marshal(data)
