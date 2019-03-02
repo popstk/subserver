@@ -45,6 +45,7 @@ var vmessParser = JSONParser{
 		if m["network"] == "http" {
 			data["host"] = m["http.host"]
 			data["path"] = m["http.path"]
+			data["net"] = "h2"
 		} else if m["network"] == "ws" {
 			data["path"] = m["ws.path"]
 		}
