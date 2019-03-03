@@ -28,7 +28,6 @@ var vmessParser = JSONParser{
 		"ws.path": JSONPathHandler("streamSettings.wsSettings.path"),
 	},
 	DefaultField: map[string]string{
-		"v":   "2",
 		"add": "",
 	},
 	PostHandler: func(m map[string]string, tag string) (string, error) {
@@ -40,6 +39,7 @@ var vmessParser = JSONParser{
 			"net": m["network"],
 			"tls": m["security"],
 			"add":m["add"],
+			"v": "2",
 		}
 
 		if m["network"] == "http" {
