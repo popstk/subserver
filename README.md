@@ -9,13 +9,25 @@
     "valid": {
         "SFZmIyaJDSAKgRVGf8YuiZst0": [
             {
-                "type": "raw",
+                "type": "v2ray",
                 "file": "config.json",
-                "host": "www.example.com"
+                "host": "www.example.com",
+                "vmess-fmt": "{protocol}-{network}",
+                "ss-fmt": "{protocol}"
             },
             {
-                "type": "v2ray",
-                "file": "account.txt",
+                "type": "sub",
+                "addr": "dnH4PH3I6ufsxFr1Bd3Ghryi"
+            }
+        ],
+        "dnH4PH3I6ufsxFr1Bd3Ghryi": [
+            {
+                "type": "raw",
+                "file": "account.json"
+            },
+            {
+                "type": "url",
+                "addr": "http://path/to/other/subserver"
             }
         ]
     }
@@ -25,11 +37,22 @@
 - valid - `json object`，key是uuid，value是一组source配置
 
 ###  source
-- type: 来源类型raw | v2ray， raw代表普通文件，v2ray代表v2ray服务器端的配置文件
-- file: 文件路径
-- host: 仅type为v2ray有效，用于生成url的host
+type 代表数据来源，以下是可选的类型和相应的字段:
 
+- raw
+  - `file`指定以换行符分割的url地址文本文件
 
-## TODO
-- v2ray支持ws、http、quic解析
+- v2ray 
+  - ` file` 指定 v2ray服务器端的配置文件
+  - `host`指定生成url指定的`remote`地址
+  - `vmess-fmt`生成vmess配置的备注格式
+  - `ss-fmt`生成ss配置的备注格式
+
+- sub
+    - `addr`合并其他`uuid`的url
+
+- url
+    - `addr`合并其他`subserver`的url
+ 
+
 

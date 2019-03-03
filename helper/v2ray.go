@@ -50,7 +50,7 @@ var vmessParser = JSONParser{
 			data["path"] = m["ws.path"]
 		}
 
-		strs, err := json.Marshal(data)
+		strs, err := json.MarshalIndent(data, "", "\t")
 		if err != nil {
 			return "", err
 		}
@@ -81,6 +81,14 @@ func Export(filepath, host, vmessfmt, ssfmt string) ([]string, error) {
 	data, err := ioutil.ReadFile(filepath)
 	if err !=nil {
 		return nil, err
+	}
+
+	if vmessfmt == "" {
+		vmessfmt = defaultVmessName
+	}
+
+	if ssfmt == "" {
+		ssfmt = defaultSSName
 	}
 
 	value := gjson.Get(string(data), "inbounds")

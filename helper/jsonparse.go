@@ -2,7 +2,6 @@ package helper
 
 import (
 	"github.com/tidwall/gjson"
-	"log"
 )
 
 // FieldParser -
@@ -28,7 +27,6 @@ func (p *JSONParser) Parse(result gjson.Result) (string, error) {
 	}
 
 	tag := FmtStringReplace(p.TagFmt, r)
-	log.Print(p.TagFmt, "->", tag)
 	return p.PostHandler(r, tag)
 }
 

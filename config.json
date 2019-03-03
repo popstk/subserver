@@ -3,15 +3,25 @@
     "valid": {
         "SFZmIyaJDSAKgRVGf8YuiZst0": [
             {
-                "type": "raw",
-                "file": "account.txt"
-            },
-            {
                 "type": "v2ray",
-                "file": "/path/to/config.json",
+                "file": "config.json",
                 "host": "www.example.com",
                 "vmess-fmt": "{protocol}-{network}",
                 "ss-fmt": "{protocol}"
+            },
+            {
+                "type": "sub",
+                "addr": "dnH4PH3I6ufsxFr1Bd3Ghryi"
+            }
+        ],
+        "dnH4PH3I6ufsxFr1Bd3Ghryi": [
+            {
+                "type": "raw",
+                "file": "account.json"
+            },
+            {
+                "type": "url",
+                "addr": "http://path/to/other/subserver"
             }
         ]
     }
