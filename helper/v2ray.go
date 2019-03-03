@@ -25,9 +25,11 @@ var vmessParser = JSONParser{
 		"security":  JSONPathHandler("streamSettings.security"),
 		"http.host": JSONPathHandler("streamSettings.httpSettings.host.0"),
 		"http.path": JSONPathHandler("streamSettings.httpSettings.path"),
+		"ws.host": JSONPathHandler("streamSettings.wsSettings.headers.Host"),
 		"ws.path": JSONPathHandler("streamSettings.wsSettings.path"),
 		"kcp.type": JSONPathHandler("streamSettings.kcpSettings.header.type"),
 		"quic.type": JSONPathHandler("streamSettings.quicSettings.header.type"),
+		"servername": JSONPathHandler("tlsSettings.serverName"),
 	},
 	DefaultField: map[string]string{
 		"add": "",
@@ -45,7 +47,6 @@ var vmessParser = JSONParser{
 		}
 
 		if m["network"] == "http" {
-			data["host"] = m["http.host"]
 			data["path"] = m["http.path"]
 			data["net"] = "h2"
 		} else if m["network"] == "ws" {
@@ -60,6 +61,10 @@ var vmessParser = JSONParser{
 				m["quic.type"] = "none"
 			}
 			data["type"] = m["quic.type"]
+		}
+
+		if data["security"] != "" {
+			data["host"] = m["servername"]
 		}
 
 		strs, err := json.MarshalIndent(data, "", "\t")
