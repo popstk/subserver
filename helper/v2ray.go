@@ -26,6 +26,8 @@ var vmessParser = JSONParser{
 		"http.host": JSONPathHandler("streamSettings.httpSettings.host.0"),
 		"http.path": JSONPathHandler("streamSettings.httpSettings.path"),
 		"ws.path": JSONPathHandler("streamSettings.wsSettings.path"),
+		"kcp.type": JSONPathHandler("streamSettings.kcpSettings.header.type"),
+		"quic.type": JSONPathHandler("streamSettings.quicSettings.header.type"),
 	},
 	DefaultField: map[string]string{
 		"add": "",
@@ -48,6 +50,16 @@ var vmessParser = JSONParser{
 			data["net"] = "h2"
 		} else if m["network"] == "ws" {
 			data["path"] = m["ws.path"]
+		} else if m["network"] == "kcp" {
+			if m["kcp.type"] == "" {
+				m["kcp.type"] = "none"
+			}
+			data["type"] = m["kcp.type"]
+		} else if m["network"] == "quic" {
+			if m["quic.type"] == "" {
+				m["quic.type"] = "none"
+			}
+			data["type"] = m["quic.type"]
 		}
 
 		strs, err := json.MarshalIndent(data, "", "\t")
@@ -93,7 +105,7 @@ func Export(filepath, host, vmessfmt, ssfmt string) ([]string, error) {
 
 	value := gjson.Get(string(data), "inbounds")
 	if !value.IsArray() {
-		return nil, errors.New("Unknow Format")
+		return nil, errors.New("unknown format")
 	}
 
 	ret := make([]string, 0)
