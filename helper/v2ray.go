@@ -3,19 +3,11 @@ package helper
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/tidwall/gjson"
-	"io/ioutil"
-)
-
-const (
-	defaultVmessName = "{protocol}-{network}"
-	defaultSSName    = "{protocol}"
 )
 
 // from https://github.com/2dust/v2rayN/wiki/分享链接格式说明(ver-2)
-var vmessParser = JSONParser{
+var VmessParser = JSONParser{
 	Filed: map[string]FieldParser{
 		"protocol":     JSONPathHandler("protocol"),
 		"port": JSONPathHandler("port"),
@@ -76,7 +68,7 @@ var vmessParser = JSONParser{
 	},
 }
 
-var ssParser = JSONParser{
+var SSParser = JSONParser{
 	Filed: map[string]FieldParser{
 		"protocol":     JSONPathHandler("protocol"),
 		"port":     JSONPathHandler("port"),
@@ -93,50 +85,4 @@ var ssParser = JSONParser{
 	},
 }
 
-// Export -
-func Export(filepath, host, vmessfmt, ssfmt string) ([]string, error) {
-	data, err := ioutil.ReadFile(filepath)
-	if err !=nil {
-		return nil, err
-	}
 
-	if vmessfmt == "" {
-		vmessfmt = defaultVmessName
-	}
-
-	if ssfmt == "" {
-		ssfmt = defaultSSName
-	}
-
-	value := gjson.Get(string(data), "inbounds")
-	if !value.IsArray() {
-		return nil, errors.New("unknown format")
-	}
-
-	ret := make([]string, 0)
-
-	for _, inbound := range value.Array() {
-
-		protocol := inbound.Get("protocol").String()
-		if protocol == "vmess" {
-			vmessParser.DefaultField["add"] = host
-			vmessParser.TagFmt = vmessfmt
-			u, err := vmessParser.Parse(inbound)
-			if err != nil {
-				return nil, err
-			}
-			ret = append(ret, u)
-		} else if protocol == "shadowsocks" {
-			ssParser.DefaultField["host"] = host
-			ssParser.TagFmt = ssfmt
-			u, err := ssParser.Parse(inbound)
-			if err != nil {
-				return nil, err
-			}
-			ret = append(ret, u)
-		}
-	}
-
-
-	return ret, nil
-}

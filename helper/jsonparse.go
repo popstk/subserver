@@ -18,12 +18,12 @@ type JSONParser struct {
 // Parse -
 func (p *JSONParser) Parse(result gjson.Result) (string, error) {
 	r := make(map[string]string)
-	for k, v := range p.DefaultField {
-		r[k]= v
-	}
-
 	for k, h := range p.Filed {
 		r[k] = h(result)
+	}
+
+	for k, v := range p.DefaultField {
+		r[k]= v
 	}
 
 	tag := FmtStringReplace(p.TagFmt, r)

@@ -6,8 +6,13 @@
                 "type": "v2ray",
                 "file": "config.json",
                 "host": "www.example.com",
-                "vmess-fmt": "{protocol}-{network}",
-                "ss-fmt": "{protocol}"
+                "fmt": {
+                    "vmess": "jp-{protocol}-{network}",
+                    "ss": "jp-{protocol}"
+                },
+                "rewrite": {
+                    "8080": "new.example.com:9090"
+                }
             },
             {
                 "type": "sub",
