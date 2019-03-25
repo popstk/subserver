@@ -55,8 +55,8 @@ var VmessParser = JSONParser{
 			data["type"] = m["quic.type"]
 		}
 
-		if data["security"] != "" {
-			data["host"] = m["servername"]
+		if data["port"] == "443" {
+			data["tls"] = "tls"
 		}
 
 		strs, err := json.MarshalIndent(data, "", "\t")
