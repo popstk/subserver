@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.subserver.query";
+option java_outer_classname = "SubseverQueryProto";
+
+package Popstk;
+
+import "google/api/annotations.proto";
+
+// The greeting service definition.
+service Subserver {
+    // Sends a greeting
+    rpc Query (Request) returns (Reply) {
+        option (google.api.http) = {
+        get: "/v1/query/{uuid}"
+    };
+    }
+}
+
+message Request {
+    string uuid = 1;
+    bool decode = 2;
+    uint32 limit = 3;
+}
+
+message Reply {
+    string message = 1;
+}
+
