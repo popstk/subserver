@@ -2,6 +2,8 @@ package helper
 
 import (
 	"bufio"
+	"encoding/base64"
+	"log"
 	"os"
 	"strings"
 )
@@ -31,4 +33,17 @@ func FmtStringReplace(format string, m map[string]string) string {
 	}
 
 	return result
+}
+
+func Base64Decode(data string) (string, error) {
+	bytes, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		bytes, err = base64.RawStdEncoding.DecodeString(data)
+	}
+
+	if err != nil {
+		log.Println("Base64Decode: ", data)
+	}
+
+	return string(bytes), err
 }

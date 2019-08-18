@@ -12,11 +12,11 @@ type JSONParser struct {
 	TagFmt string
 	Filed       map[string]FieldParser
 	DefaultField map[string]string
-	PostHandler func(m map[string]string, tag string) (string,error)
+	PostHandler func(m map[string]string, tag string) (Endpoint,error)
 }
 
 // Parse -
-func (p *JSONParser) Parse(result gjson.Result) (string, error) {
+func (p *JSONParser) Parse(result gjson.Result) (Endpoint, error) {
 	r := make(map[string]string)
 	for k, h := range p.Filed {
 		r[k] = h(result)

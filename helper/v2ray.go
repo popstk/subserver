@@ -4,85 +4,128 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
+	"log"
+	"strconv"
+	"strings"
 )
 
 // from https://github.com/2dust/v2rayN/wiki/分享链接格式说明(ver-2)
+type VmessURL struct {
+	Version  int    `json:"v"`
+	AlterId  int    `json:"aid"`
+	Ps       string `json:"ps"`
+	Port     string `json:"port"`
+	ID       string `json:"id"`
+	Network  string `json:"net"`
+	Security string `json:"tls"`
+	Add      string `json:"add"`
+	FakePath string `json:"path"`
+	FakeType string `json:"type"`
+	FakeHost string `json:"host"`
+}
+
+func NewVmessURL(u string) (*VmessURL, error) {
+	const prefix = "vmess://"
+
+	if !strings.HasPrefix(u, prefix) {
+		return nil, errors.New("helper: invalid vmess url")
+	}
+
+	var vu VmessURL
+	data, err := Base64Decode(u[len(prefix):])
+	if err != nil {
+		log.Println(u)
+		return nil, errors.Wrap(err, "helper: can not decode data")
+	}
+
+	if err = json.Unmarshal([]byte(data), &vu); err != nil {
+		return nil, errors.Wrap(err, "helper: can not unmarshal data")
+	}
+
+	return &vu, nil
+}
+
+func (v *VmessURL) Addr() string {
+	return fmt.Sprintf("%s:%s", v.Add, v.Port)
+}
+
+func (v *VmessURL) Type() string {
+	return "vmess"
+}
+
+func (v *VmessURL) String() string {
+	data, err := json.MarshalIndent(v, "", "\t")
+	if err != nil {
+		return ""
+	}
+
+	return "vmess://" + base64.StdEncoding.EncodeToString(data)
+}
+
 var VmessParser = JSONParser{
 	Filed: map[string]FieldParser{
-		"protocol":     JSONPathHandler("protocol"),
-		"port": JSONPathHandler("port"),
-		"id":   JSONPathHandler("settings.clients.0.id"),
-		"alterId":  JSONPathHandler("settings.clients.0.alterId"),
-		"network":  JSONPathHandler("streamSettings.network"),
-		"security":  JSONPathHandler("streamSettings.security"),
-		"http.host": JSONPathHandler("streamSettings.httpSettings.host.0"),
-		"http.path": JSONPathHandler("streamSettings.httpSettings.path"),
-		"ws.host": JSONPathHandler("streamSettings.wsSettings.headers.Host"),
-		"ws.path": JSONPathHandler("streamSettings.wsSettings.path"),
-		"kcp.type": JSONPathHandler("streamSettings.kcpSettings.header.type"),
-		"quic.type": JSONPathHandler("streamSettings.quicSettings.header.type"),
-		"servername": JSONPathHandler("tlsSettings.serverName"),
+		"protocol":      JSONPathHandler("protocol"),
+		"port":          JSONPathHandler("port"),
+		"id":            JSONPathHandler("settings.clients.0.id"),
+		"alterId":       JSONPathHandler("settings.clients.0.alterId"),
+		"network":       JSONPathHandler("streamSettings.network"),
+		"security":      JSONPathHandler("streamSettings.security"),
+		"http.host":     JSONPathHandler("streamSettings.httpSettings.host.0"),
+		"http.path":     JSONPathHandler("streamSettings.httpSettings.path"),
+		"ws.host":       JSONPathHandler("streamSettings.wsSettings.headers.Host"),
+		"ws.path":       JSONPathHandler("streamSettings.wsSettings.path"),
+		"kcp.type":      JSONPathHandler("streamSettings.kcpSettings.header.type"),
+		"quic.type":     JSONPathHandler("streamSettings.quicSettings.header.type"),
+		"quic.security": JSONPathHandler("streamSettings.quicSettings.security"),
+		"quic.key":      JSONPathHandler("streamSettings.quicSettings.key"),
+		"servername":    JSONPathHandler("tlsSettings.serverName"),
 	},
 	DefaultField: map[string]string{
 		"add": "",
 	},
-	PostHandler: func(m map[string]string, tag string) (string, error) {
-		data := map[string]string{
-			"ps": tag,
-			"port": m["port"],
-			"id": m["id"],
-			"aid": m["alterId"],
-			"net": m["network"],
-			"tls": m["security"],
-			"add":m["add"],
-			"v": "2",
+	PostHandler: func(m map[string]string, tag string) (Endpoint, error) {
+		alterId, err := strconv.Atoi(m["alterId"])
+		if err != nil {
+			return nil, errors.Wrap(err, "VmessParser")
+		}
+
+		vu := VmessURL{
+			Ps:       tag,
+			Port:     m["port"],
+			ID:       m["id"],
+			AlterId:  alterId,
+			Network:  m["network"],
+			Security: m["security"],
+			Add:      m["add"],
+			Version:  2,
 		}
 
 		if m["network"] == "http" {
-			data["path"] = m["http.path"]
-			data["net"] = "h2"
+			vu.FakeHost = m["http.host"]
+			vu.FakePath = m["http.path"]
+			vu.Network = "h2"
 		} else if m["network"] == "ws" {
-			data["path"] = m["ws.path"]
+			vu.FakeHost = m["ws.host"]
+			vu.FakePath = m["ws.path"]
 		} else if m["network"] == "kcp" {
 			if m["kcp.type"] == "" {
 				m["kcp.type"] = "none"
 			}
-			data["type"] = m["kcp.type"]
+			vu.FakeType = m["kcp.type"]
 		} else if m["network"] == "quic" {
 			if m["quic.type"] == "" {
 				m["quic.type"] = "none"
 			}
-			data["type"] = m["quic.type"]
+			vu.FakeType = m["quic.type"]
+			vu.FakeHost = m["quic.security"]
+			vu.FakePath = m["quic.key"]
 		}
 
-		if data["port"] == "443" {
-			data["tls"] = "tls"
+		if vu.Port == "443" {
+			vu.Security = "tls"
 		}
 
-		strs, err := json.MarshalIndent(data, "", "\t")
-		if err != nil {
-			return "", err
-		}
-
-		return "vmess://" + base64.StdEncoding.EncodeToString(strs), nil
+		return &vu, nil
 	},
 }
-
-var SSParser = JSONParser{
-	Filed: map[string]FieldParser{
-		"protocol":     JSONPathHandler("protocol"),
-		"port":     JSONPathHandler("port"),
-		"method":   JSONPathHandler("settings.method"),
-		"password": JSONPathHandler("settings.password"),
-	},
-	DefaultField: map[string]string{
-		"host": "",
-	},
-	PostHandler: func(m map[string]string, tag string) (string, error) {
-		u := fmt.Sprintf("%s:%s@%s:%s", m["method"], m["password"], m["host"], m["port"])
-		u = fmt.Sprintf("ss://%s#%s", base64.StdEncoding.EncodeToString([]byte(u)), tag)
-		return u, nil
-	},
-}
-
-

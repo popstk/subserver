@@ -4,12 +4,12 @@ option java_multiple_files = true;
 option java_package = "io.grpc.subserver.query";
 option java_outer_classname = "SubseverQueryProto";
 
-package Popstk;
+package Server;
 
 import "google/api/annotations.proto";
 
 // The greeting service definition.
-service Subserver {
+service Subscribe {
     // Sends a greeting
     rpc Query (Request) returns (Reply) {
         option (google.api.http) = {
