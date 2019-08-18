@@ -3,8 +3,10 @@ package helper
 import (
 	"bufio"
 	"encoding/base64"
+	"encoding/json"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -46,4 +48,22 @@ func Base64Decode(data string) (string, error) {
 	}
 
 	return string(bytes), err
+}
+
+type Number int
+
+func (n Number) MarshalJSON() ([]byte, error) {
+	return json.Marshal(int(n))
+}
+
+func (n *Number)  UnmarshalJSON(b []byte) error {
+	value := string(b)
+	value = strings.Trim(value, "\"")
+	val, err :=  strconv.Atoi(value)
+	if err != nil {
+		return err
+	}
+
+	*n = Number(val)
+	return nil
 }

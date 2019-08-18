@@ -12,8 +12,8 @@ import (
 
 // from https://github.com/2dust/v2rayN/wiki/分享链接格式说明(ver-2)
 type VmessURL struct {
-	Version  int    `json:"v"`
-	AlterId  int    `json:"aid"`
+	Version  Number `json:"v"`
+	AlterId  Number `json:"aid"`
 	Ps       string `json:"ps"`
 	Port     string `json:"port"`
 	ID       string `json:"id"`
@@ -94,7 +94,7 @@ var VmessParser = JSONParser{
 			Ps:       tag,
 			Port:     m["port"],
 			ID:       m["id"],
-			AlterId:  alterId,
+			AlterId:  Number(alterId),
 			Network:  m["network"],
 			Security: m["security"],
 			Add:      m["add"],

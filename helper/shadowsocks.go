@@ -19,7 +19,7 @@ type ShadowsocksURL struct {
 
 func NewShadowsocksURL(u string) (*ShadowsocksURL, error) {
 	const prefix = "ss://"
-	if strings.HasPrefix(u, prefix) {
+	if !strings.HasPrefix(u, prefix) {
 		return nil, errors.New("helper: invalid shadowsocks url")
 	}
 
