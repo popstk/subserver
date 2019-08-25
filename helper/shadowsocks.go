@@ -66,6 +66,7 @@ func (s *ShadowsocksURL) String() string {
 	return fmt.Sprintf("ss://%s#%s", base64.StdEncoding.EncodeToString([]byte(data)), s.Tag)
 }
 
+// SSParser parse shadowsocks node in v2ray config
 var SSParser = JSONParser{
 	Filed: map[string]FieldParser{
 		"protocol": JSONPathHandler("protocol"),

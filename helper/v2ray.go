@@ -68,7 +68,7 @@ func (v *VmessURL) String() string {
 	return "vmess://" + base64.StdEncoding.EncodeToString(data)
 }
 
-// VmessParser -
+// VmessParser parse vmess node in v2ray config
 var VmessParser = JSONParser{
 	Filed: map[string]FieldParser{
 		"protocol":      JSONPathHandler("protocol"),
