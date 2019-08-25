@@ -1,4 +1,4 @@
-# subserver
+# subserver [![Go Report Card](https://goreportcard.com/badge/github.com/popstk/subserver)](https://goreportcard.com/report/github.com/popstk/subserver)
 订阅服务器，自动按照配置，生成客户端用的url
 - 支持v2ray配置文件
 
@@ -54,5 +54,8 @@ type 代表数据来源，以下是可选的类型和相应的字段:
 - url
     - `addr`合并其他`subserver`的url
  
-
+## 特性
+- 支持从v2ray配置文件，根据suberver配置，生成节点
+- 自动过滤localhost节点
+- 自动更新配置文件
 

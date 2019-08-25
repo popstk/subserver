@@ -28,6 +28,7 @@ type Fmt struct {
 	SS    string `json:"ss"`
 }
 
+// LoadConfig load config from config file
 func LoadConfig() error {
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
@@ -45,6 +46,7 @@ func LoadConfig() error {
 	return nil
 }
 
+// ListenConfig watch config file
 func ListenConfig(ctx context.Context) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -68,6 +70,7 @@ func ListenConfig(ctx context.Context) error {
 	}
 }
 
+// Source subserver source
 type Source struct {
 	Type    string            `json:"type"`
 	File    string            `json:"file"`
@@ -82,7 +85,27 @@ const (
 	defaultSSName    = "{protocol}"
 )
 
-func ParseV2rayConfig(s *Source) ([]helper.Endpoint, error) {
+// URLToEndpoint parse uri array to endpoint array
+func URLToEndpoint(uris ...string) []helper.Endpoint {
+	var nodes []helper.Endpoint
+	for _, u := range uris {
+		u = strings.TrimSpace(u)
+		if u == "" {
+			continue
+		}
+
+		node, err := helper.ParseEndpoint(u)
+		if err != nil {
+			log.Println(err, " => ", u)
+			continue
+		}
+		nodes = append(nodes, node)
+	}
+	return nodes
+}
+
+// V2rayNodeHandler parse v2ray source
+func V2rayNodeHandler(s *Source) ([]helper.Endpoint, error) {
 	data, err := ioutil.ReadFile(s.File)
 	if err != nil {
 		return nil, err
@@ -143,24 +166,7 @@ func ParseV2rayConfig(s *Source) ([]helper.Endpoint, error) {
 	return ret, nil
 }
 
-func URLToEndpoint(uris ...string) []helper.Endpoint {
-	var nodes []helper.Endpoint
-	for _, u := range uris {
-		u = strings.TrimSpace(u)
-		if u == "" {
-			continue
-		}
-
-		node, err := helper.ParseEndpoint(u)
-		if err != nil {
-			log.Println(err, " => ", u)
-			continue
-		}
-		nodes = append(nodes, node)
-	}
-	return nodes
-}
-
+// RawNodeHandler parse raw source
 func RawNodeHandler(s *Source) ([]helper.Endpoint, error) {
 	uris, err := helper.ReadLines(s.File)
 	if err != nil {
@@ -170,11 +176,8 @@ func RawNodeHandler(s *Source) ([]helper.Endpoint, error) {
 	return URLToEndpoint(uris...), nil
 }
 
-func V2rayNodeHandler(s *Source) ([]helper.Endpoint, error) {
-	return ParseV2rayConfig(s)
-}
-
-func UrlNodeHandler(s *Source) ([]helper.Endpoint, error) {
+// URLNodeHandler parse url source
+func URLNodeHandler(s *Source) ([]helper.Endpoint, error) {
 	if s.Addr == "" {
 		return nil, errors.New("addr: url is empty")
 	}
@@ -190,7 +193,6 @@ func UrlNodeHandler(s *Source) ([]helper.Endpoint, error) {
 	}
 	_ = rsp.Body.Close()
 
-
 	nodes, err := helper.Base64Decode(string(data))
 	if err != nil {
 		return nil, errors.Wrap(err, "UrlNodeHandler")
@@ -203,9 +205,10 @@ func UrlNodeHandler(s *Source) ([]helper.Endpoint, error) {
 var handlerMap = map[string]func(s *Source) ([]helper.Endpoint, error){
 	"raw":   RawNodeHandler,
 	"v2ray": V2rayNodeHandler,
-	"url":   UrlNodeHandler,
+	"url":   URLNodeHandler,
 }
 
+// ParseConfig parse config to endpoint by uuid
 func ParseConfig(uuid string) ([]helper.Endpoint, error) {
 	nodes := make([]helper.Endpoint, 0)
 	m := make(map[string]bool)

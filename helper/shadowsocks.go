@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// ShadowsocksURL implement interface Endpoint
 type ShadowsocksURL struct {
 	Host     string `json:"host"`
 	Port     string `json:"port"`
@@ -17,6 +18,7 @@ type ShadowsocksURL struct {
 	Tag      string `json:"tag"`
 }
 
+// NewShadowsocksURL -
 func NewShadowsocksURL(u string) (*ShadowsocksURL, error) {
 	const prefix = "ss://"
 	if !strings.HasPrefix(u, prefix) {
@@ -48,14 +50,17 @@ func NewShadowsocksURL(u string) (*ShadowsocksURL, error) {
 	return &su, nil
 }
 
+// Addr -
 func (s *ShadowsocksURL) Addr() string {
 	return fmt.Sprintf("%s:%s", s.Host, s.Port)
 }
 
+// Type -
 func (s *ShadowsocksURL) Type() string {
 	return "shadowsocks"
 }
 
+// String -
 func (s *ShadowsocksURL) String() string {
 	data := fmt.Sprintf("%s:%s@%s:%s", s.Method, s.Password, s.Host, s.Port)
 	return fmt.Sprintf("ss://%s#%s", base64.StdEncoding.EncodeToString([]byte(data)), s.Tag)

@@ -27,16 +27,17 @@ func ReadLines(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
-
+// FmtStringReplace replace {key} ,key in map
 func FmtStringReplace(format string, m map[string]string) string {
 	result := format
-	for k,v := range m {
+	for k, v := range m {
 		result = strings.Replace(result, "{"+k+"}", v, -1)
 	}
 
 	return result
 }
 
+// Base64Decode try base64 decode
 func Base64Decode(data string) (string, error) {
 	bytes, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
@@ -50,16 +51,19 @@ func Base64Decode(data string) (string, error) {
 	return string(bytes), err
 }
 
+// Number support number 1 and "1"
 type Number int
 
+// MarshalJSON -
 func (n Number) MarshalJSON() ([]byte, error) {
 	return json.Marshal(int(n))
 }
 
-func (n *Number)  UnmarshalJSON(b []byte) error {
+// UnmarshalJSON -
+func (n *Number) UnmarshalJSON(b []byte) error {
 	value := string(b)
 	value = strings.Trim(value, "\"")
-	val, err :=  strconv.Atoi(value)
+	val, err := strconv.Atoi(value)
 	if err != nil {
 		return err
 	}

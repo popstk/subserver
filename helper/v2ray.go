@@ -10,10 +10,11 @@ import (
 	"strings"
 )
 
+// VmessURL implement interface Endpoint
 // from https://github.com/2dust/v2rayN/wiki/分享链接格式说明(ver-2)
 type VmessURL struct {
 	Version  Number `json:"v"`
-	AlterId  Number `json:"aid"`
+	AlterID  Number `json:"aid"`
 	Ps       string `json:"ps"`
 	Port     string `json:"port"`
 	ID       string `json:"id"`
@@ -25,6 +26,7 @@ type VmessURL struct {
 	FakeHost string `json:"host"`
 }
 
+// NewVmessURL -
 func NewVmessURL(u string) (*VmessURL, error) {
 	const prefix = "vmess://"
 
@@ -46,14 +48,17 @@ func NewVmessURL(u string) (*VmessURL, error) {
 	return &vu, nil
 }
 
+// Addr -
 func (v *VmessURL) Addr() string {
 	return fmt.Sprintf("%s:%s", v.Add, v.Port)
 }
 
+// Type -
 func (v *VmessURL) Type() string {
 	return "vmess"
 }
 
+// String -
 func (v *VmessURL) String() string {
 	data, err := json.MarshalIndent(v, "", "\t")
 	if err != nil {
@@ -63,6 +68,7 @@ func (v *VmessURL) String() string {
 	return "vmess://" + base64.StdEncoding.EncodeToString(data)
 }
 
+// VmessParser -
 var VmessParser = JSONParser{
 	Filed: map[string]FieldParser{
 		"protocol":      JSONPathHandler("protocol"),
@@ -85,7 +91,7 @@ var VmessParser = JSONParser{
 		"add": "",
 	},
 	PostHandler: func(m map[string]string, tag string) (Endpoint, error) {
-		alterId, err := strconv.Atoi(m["alterId"])
+		alterID, err := strconv.Atoi(m["alterId"])
 		if err != nil {
 			return nil, errors.Wrap(err, "VmessParser")
 		}
@@ -94,7 +100,7 @@ var VmessParser = JSONParser{
 			Ps:       tag,
 			Port:     m["port"],
 			ID:       m["id"],
-			AlterId:  Number(alterId),
+			AlterID:  Number(alterID),
 			Network:  m["network"],
 			Security: m["security"],
 			Add:      m["add"],

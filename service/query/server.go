@@ -19,8 +19,10 @@ var (
 	configMutex sync.Mutex
 )
 
+// Server -
 type Server struct{}
 
+// Query grpc service
 func (s *Server) Query(ctx context.Context, request *pb.Request) (*pb.Reply, error) {
 	uuid := request.Uuid
 	log.Println("uuid =>  ", uuid)
@@ -33,7 +35,7 @@ func (s *Server) Query(ctx context.Context, request *pb.Request) (*pb.Reply, err
 	// filter localhost node
 	var valid []string
 	for _, node := range nodes {
-		host, _ ,err := net.SplitHostPort(node.Addr())
+		host, _, err := net.SplitHostPort(node.Addr())
 		if err != nil {
 			log.Println(err)
 			continue
@@ -55,6 +57,7 @@ func (s *Server) Query(ctx context.Context, request *pb.Request) (*pb.Reply, err
 	}, nil
 }
 
+// Serve serve http server with config, return listen address
 func Serve(path string) (string, error) {
 	configFile = path
 
