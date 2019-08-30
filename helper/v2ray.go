@@ -126,6 +126,8 @@ var VmessParser = JSONParser{
 			vu.FakeType = m["quic.type"]
 			vu.FakeHost = m["quic.security"]
 			vu.FakePath = m["quic.key"]
+		} else if m["network"] == "" {
+			m["network"] = "tcp"
 		}
 
 		if vu.Port == "443" {
