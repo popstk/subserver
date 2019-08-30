@@ -30,9 +30,19 @@ func (p *JSONParser) Parse(result gjson.Result) (Endpoint, error) {
 	return p.PostHandler(r, tag)
 }
 
-// JSONPathHandler -
-func JSONPathHandler(p string) func(result gjson.Result) string {
+// JSONPath -
+func JSONPath(p string) func(result gjson.Result) string {
 	return func(result gjson.Result) string {
 		return result.Get(p).String()
+	}
+}
+
+// JSONPathWithValue json path with default value
+func JSONPathWithValue(p, value string) func(result gjson.Result) string {
+	return func(result gjson.Result) string {
+		if v := result.Get(p).String(); v != "" {
+			return v
+		}
+		return value
 	}
 }

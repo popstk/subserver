@@ -71,21 +71,21 @@ func (v *VmessURL) String() string {
 // VmessParser parse vmess node in v2ray config
 var VmessParser = JSONParser{
 	Filed: map[string]FieldParser{
-		"protocol":      JSONPathHandler("protocol"),
-		"port":          JSONPathHandler("port"),
-		"id":            JSONPathHandler("settings.clients.0.id"),
-		"alterId":       JSONPathHandler("settings.clients.0.alterId"),
-		"network":       JSONPathHandler("streamSettings.network"),
-		"security":      JSONPathHandler("streamSettings.security"),
-		"http.host":     JSONPathHandler("streamSettings.httpSettings.host.0"),
-		"http.path":     JSONPathHandler("streamSettings.httpSettings.path"),
-		"ws.host":       JSONPathHandler("streamSettings.wsSettings.headers.Host"),
-		"ws.path":       JSONPathHandler("streamSettings.wsSettings.path"),
-		"kcp.type":      JSONPathHandler("streamSettings.kcpSettings.header.type"),
-		"quic.type":     JSONPathHandler("streamSettings.quicSettings.header.type"),
-		"quic.security": JSONPathHandler("streamSettings.quicSettings.security"),
-		"quic.key":      JSONPathHandler("streamSettings.quicSettings.key"),
-		"servername":    JSONPathHandler("tlsSettings.serverName"),
+		"protocol":      JSONPath("protocol"),
+		"port":          JSONPath("port"),
+		"id":            JSONPath("settings.clients.0.id"),
+		"alterId":       JSONPath("settings.clients.0.alterId"),
+		"network":       JSONPathWithValue("streamSettings.network", "tcp"),
+		"security":      JSONPath("streamSettings.security"),
+		"http.host":     JSONPath("streamSettings.httpSettings.host.0"),
+		"http.path":     JSONPath("streamSettings.httpSettings.path"),
+		"ws.host":       JSONPath("streamSettings.wsSettings.headers.Host"),
+		"ws.path":       JSONPath("streamSettings.wsSettings.path"),
+		"kcp.type":      JSONPath("streamSettings.kcpSettings.header.type"),
+		"quic.type":     JSONPath("streamSettings.quicSettings.header.type"),
+		"quic.security": JSONPath("streamSettings.quicSettings.security"),
+		"quic.key":      JSONPath("streamSettings.quicSettings.key"),
+		"servername":    JSONPath("tlsSettings.serverName"),
 	},
 	DefaultField: map[string]string{
 		"add": "",
@@ -126,8 +126,6 @@ var VmessParser = JSONParser{
 			vu.FakeType = m["quic.type"]
 			vu.FakeHost = m["quic.security"]
 			vu.FakePath = m["quic.key"]
-		} else if m["network"] == "" {
-			m["network"] = "tcp"
 		}
 
 		if vu.Port == "443" {
