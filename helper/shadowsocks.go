@@ -69,10 +69,10 @@ func (s *ShadowsocksURL) String() string {
 // SSParser parse shadowsocks node in v2ray config
 var SSParser = JSONParser{
 	Filed: map[string]FieldParser{
-		"protocol": JSONPathHandler("protocol"),
-		"port":     JSONPathHandler("port"),
-		"method":   JSONPathHandler("settings.method"),
-		"password": JSONPathHandler("settings.password"),
+		"protocol": JSONPath("protocol"),
+		"port":     JSONPath("port"),
+		"method":   JSONPath("settings.method"),
+		"password": JSONPath("settings.password"),
 	},
 	DefaultField: map[string]string{
 		"host": "",
