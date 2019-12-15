@@ -5,6 +5,7 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/grpc-ecosystem/grpc-gateway v1.9.6
 	github.com/pkg/errors v0.8.1
+	github.com/sevlyar/go-daemon v0.1.5
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/tidwall/gjson v1.2.1
 	github.com/tidwall/match v1.0.1 // indirect
@@ -15,3 +16,5 @@ require (
 	google.golang.org/genproto v0.0.0-20190817000702-55e96fffbd48
 	google.golang.org/grpc v1.23.0
 )
+
+go 1.13
