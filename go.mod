@@ -4,6 +4,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/golang/protobuf v1.3.2
 	github.com/grpc-ecosystem/grpc-gateway v1.9.6
+	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/sevlyar/go-daemon v0.1.5
 	github.com/stretchr/testify v1.3.0 // indirect

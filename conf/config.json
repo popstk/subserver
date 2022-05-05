@@ -28,6 +28,12 @@
                 "type": "url",
                 "addr": "http://path/to/other/subserver"
             }
+        ],
+        "iSbF4Axk6A4qBbFHv7XT": [
+            {
+                "type": "proxy",
+                "addr": "http://path/to/proxy"
+            }
         ]
     }
 }

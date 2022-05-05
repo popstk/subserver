@@ -79,6 +79,13 @@ func Run(ctx context.Context) {
 			return
 		}
 
+		const Redirect = "redirect/"
+
+		if strings.HasPrefix(reply.Message, Redirect) {
+			http.Redirect(w, r, reply.Message[len(Redirect):], http.StatusTemporaryRedirect)
+			return
+		}
+
 		_, _ = w.Write([]byte(reply.Message))
 	})
 

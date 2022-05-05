@@ -202,10 +202,20 @@ func URLNodeHandler(s *Source) ([]helper.Endpoint, error) {
 	return URLToEndpoint(urls...), nil
 }
 
+func ProxyNodeHandler(s *Source) ([]helper.Endpoint, error) {
+	val, err := helper.ParseProxy(s.Addr)
+	if err != nil {
+		return nil, errors.Wrap(err, "helper.ParseProxy")
+	}
+
+	return []helper.Endpoint{val}, nil
+}
+
 var handlerMap = map[string]func(s *Source) ([]helper.Endpoint, error){
 	"raw":   RawNodeHandler,
 	"v2ray": V2rayNodeHandler,
 	"url":   URLNodeHandler,
+	"proxy": ProxyNodeHandler,
 }
 
 // ParseConfig parse config to endpoint by uuid

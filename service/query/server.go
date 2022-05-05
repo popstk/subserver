@@ -32,6 +32,13 @@ func (s *Server) Query(ctx context.Context, request *pb.Request) (*pb.Reply, err
 		return nil, err
 	}
 
+	// if proxy
+	if len(nodes) == 1 && nodes[0].Type() == "proxy" {
+		return &pb.Reply{
+			Message: "redirect/" + nodes[0].String(),
+		}, nil
+	}
+
 	// filter localhost node
 	var valid []string
 	for _, node := range nodes {
@@ -64,7 +71,12 @@ func Serve(path string) (string, error) {
 	if err := LoadConfig(); err != nil {
 		return "", errors.Wrap(err, "query: can not load config")
 	}
-	go ListenConfig(context.Background())
+	go func() {
+		err := ListenConfig(context.Background())
+		if err != nil {
+			log.Println("ListenConfig err: ", err)
+		}
+	}()
 
 	lis, err := net.Listen("tcp", ":0")
 	if err != nil {
